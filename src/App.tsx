@@ -1,5 +1,10 @@
-import React from 'react'
+import React from 'react';
 
-const App = () => <h1>asha</h1>
+const App = () => (
+  <h1>
+    asha
+    <code>shushua</code>
+  </h1>
+);
 
-export default App
+export default App;
