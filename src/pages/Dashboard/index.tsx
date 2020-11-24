@@ -1,5 +1,6 @@
 import React, { FormEvent, useEffect, useState } from 'react';
 import { FiChevronRight } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 
 import { Form, Title, RepositoryList, Error } from './styles';
@@ -72,14 +73,14 @@ const Dashboard: React.FC = () => {
 
       <RepositoryList>
         {repositories.map(repo => (
-          <a href="/">
+          <Link to={`/repositories/${repo.full_name}`}>
             <img src={repo.owner.avatar_url} alt={repo.owner.avatar_url} />
             <div>
               <strong>{repo.full_name}</strong>
               <p>{repo.description || 'Nenhuma descrição foi escrita'}</p>
             </div>
             <FiChevronRight color="#C9C9D4" size={20} />
-          </a>
+          </Link>
         ))}
       </RepositoryList>
     </>
