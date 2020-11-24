@@ -1,25 +1,51 @@
 import React, { FormEvent, useState } from 'react';
 import { FiChevronRight } from 'react-icons/fi';
+import api from '../../services/api';
 
-import { Form, Title, RepositoryList } from './styles';
+import { Form, Title, RepositoryList, Error } from './styles';
 
 import githubExplorerLogo from '../../assets/github-explorer-logo.svg';
 
+interface Repository {
+  full_name: string;
+  description: string;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
+
 const Dashboard: React.FC = () => {
   const [newRepository, setNewRepository] = useState('');
-  const [repositories, setRepositories] = useState([]);
+  const [inputError, setInputError] = useState('');
+  const [repositories, setRepositories] = useState<Repository[]>([]);
 
-  function handleAddRepository(event: FormEvent<HTMLFormElement>): void {
+  async function handleAddRepository(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
     event.preventDefault();
-    console.log(newRepository);
+    if (!newRepository) {
+      setInputError('Digite o autor/nome do repositório');
+      return;
+    }
+
+    try {
+      const response = await api.get<Repository>(`/repos/${newRepository}`);
+
+      setRepositories([...repositories, response.data]);
+      setNewRepository('');
+      setInputError('');
+    } catch (err) {
+      setInputError('Erro na busca desse repositório');
+    }
   }
 
   return (
     <>
       <img src={githubExplorerLogo} alt="Github explorer" />
-      <Title>Eplore repositórios no Github</Title>
+      <Title>Explore repositórios no Github</Title>
 
-      <Form onSubmit={handleAddRepository}>
+      <Form hasError={!!inputError} onSubmit={handleAddRepository}>
         <input
           name="repo"
           placeholder="Digite aqui"
@@ -28,18 +54,19 @@ const Dashboard: React.FC = () => {
         <button type="submit">Pesquisar</button>
       </Form>
 
+      {inputError && <Error>{inputError}</Error>}
+
       <RepositoryList>
-        <a href="/">
-          <img
-            src="https://avatars3.githubusercontent.com/u/46852072?s=460&u=aad56deb598deab9dba3ab8601c6574003c451e4&v=4"
-            alt="Daniel"
-          />
-          <div>
-            <strong>title</strong>
-            <p>asd</p>
-          </div>
-          <FiChevronRight color="#C9C9D4" size={20} />
-        </a>
+        {repositories.map(repo => (
+          <a href="/">
+            <img src={repo.owner.avatar_url} alt={repo.owner.avatar_url} />
+            <div>
+              <strong>{repo.full_name}</strong>
+              <p>{repo.description || 'Nenhuma descrição foi escrita'}</p>
+            </div>
+            <FiChevronRight color="#C9C9D4" size={20} />
+          </a>
+        ))}
       </RepositoryList>
     </>
   );
